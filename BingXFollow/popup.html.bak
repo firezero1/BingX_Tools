@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+  <head>
+	<meta charset="utf-8">
+    <link rel="stylesheet" href="button.css">
+  </head>
+  <body>
+    <!-- <button id="changeColor"></button> -->
+	<p>平倉日篩選(若要全部資料請留空)</p>
+	<p>起日:</p>
+	<input type="date" id="filterDate" >
+	<p>迄日:</p>
+	<input type="date" id="filterDateEnd" >
+	<p>點擊次數:</p>
+	<input type="text" id="clickCount" value="30">
+	<p>點擊速度(秒/次):</p>
+	<input type="text" id="clickSpeed" value="0.7">
+	<p></p>
+	<input type="checkbox" id="isBinance">
+	<label for="isBinance"> 幣安合約</label><br>
+	<button id="clickactivity">輸出CSV</button>
+    <script src="popup.js"></script>
+  </body>
+</html>
