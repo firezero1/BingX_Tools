@@ -76,9 +76,11 @@ async function mainLoop() {
 	
 	for(let i = 0; i < count; i++){
 		//console.log(i)	
-       await clickFunction(i);
+       await clickFunction(1);
 	   if(i===count-1){
-		  await outputExcel(i+1);//用i+1是確保最後一次click做完後再轉csv
+		  //await outputExcel(i+1);//用i+1是確保最後一次click做完後再轉csv
+		  await outputExcel(1);//直接用1，因為上面會做完後再輸出
+
 	   }
     }
 	//alert('finish');
@@ -87,23 +89,27 @@ async function mainLoop() {
 
 
 function clickFunction(i){
-    setTimeout(() => {
-		console.log('into clickFunction') 
-		var getButtonResult = document.getElementsByClassName("more");
-		if (getButtonResult.length!=1) {
-			isMoreData=false
-			//console.log('set isMoreData false') 
-			//console.log(i)			
-		} else {
-			var seemore = getButtonResult[0]
-			seemore.click()	
-			//console.log('click') 
-			//console.log(i)
-		}	
-		
+	return new Promise((resolve,reject)=>{//用promise才有辦法讓呼叫clickFunction的程式等他完成才進行下一步
+	    setTimeout(() => {
+			console.log('into clickFunction') 
+			var getButtonResult = document.getElementsByClassName("more");
+			if (getButtonResult.length!=1) {
+				isMoreData=false
+				//console.log('set isMoreData false') 
+				//console.log(i)			
+			} else {
+				var seemore = getButtonResult[0]
+				seemore.click()	
+				//console.log('click') 
+				//console.log(i)
+			}	
 
-		
-    }, timeoutBase*i );
+			resolve();
+			
+		}, timeoutBase*i );
+	
+	});
+
 }
 
 function outputExcel(i){
@@ -182,6 +188,7 @@ function outputBingX(){
 						row.push(rows[j].children[k].innerText);
 						row.push('槓桿倍數');
 						row.push('方向');
+						row.push('倉別');
 					}else if (k===5){
 						row.push(rows[j].children[k].innerText);
 						row.push('訂單本金單位');	
@@ -200,7 +207,9 @@ function outputBingX(){
 					}
 				}
 				else if(k===0&& j>0){
-					row.push(rows[j].children[k].innerText.replace(/\n/g, ' ').replace(/\(/g, ',').replace(/X\)/g, ','))//取消cell中的換行符號、將(換成逗點、將X)換成逗點，切開槓桿倍數和方向
+					//row.push(rows[j].children[k].innerText.replace(/\n/g, ' ').replace(/\(/g, ',').replace(/X\)/g, ','))//取消cell中的換行符號、將(換成逗點、將X)換成逗點，切開槓桿倍數和方向
+					row.push(rows[j].children[k].innerText.replace(/空/g, '空,').replace(/多/g, '多,').replace(/\n/g, '').replace(/ /g, '').replace(/·/g, ',').replace(/X/g, ','))//在多或空後面加上逗號切開方向，取消cell中的換行符號，取消空白，將槓桿前面的點換成逗號，X換成逗號
+
 				}
 				else if (k===5){
 					var principleData = rows[j].children[k].innerText
@@ -291,19 +300,19 @@ function outputBinance(){
 			var row = [];
 			//若有設定起日篩選，先檢查日期，小於該日期就不放入輸出CSV內
 			if(filterDate&&j>0){
-				var sellDate = new Date(formatDate(rows[j].children[3].innerText));
+				var sellDate = new Date(formatDate(rows[j].children[4].innerText));
 				var filterDateInDate = new Date(filterDate)
 				filterDateInDate.setHours(0,0,0,0);//因為new Date產生的時間會是早上8點，必須將它設為凌晨12點，才能將起日當天資料全部納入
 								
 				if(sellDate<filterDateInDate){
-					console.log(filterDateInDate)
+					//console.log(filterDateInDate)
 					continue;
 				}
 				
 			}
 			//若有設定迄日篩選，先檢查日期，大於該日期就不放入輸出CSV內
 			if(filterDateEnd&&j>0){
-				var sellDate = new Date(formatDate(rows[j].children[3].innerText));				
+				var sellDate = new Date(formatDate(rows[j].children[4].innerText));				
 				var filterDateEndInDate = new Date(filterDateEnd);
 				filterDateEndInDate.setHours(23,59,59,999);//因為new Date產生的時間會是早上8點，必須將它設為23:59:59，才能將迄日當天資料全部納入
 				
@@ -339,11 +348,13 @@ function outputBinance(){
 					}
 				}
 				else if(k===0&& j>0){
-					row.push(rows[j].children[k].innerText.replace(/\n/g, ' ').replace(/\(/g, ',').replace(/X\)/g, ','))//取消cell中的換行符號、將(換成逗點、將X)換成逗點，切開槓桿倍數和方向
+					//row.push(rows[j].children[k].innerText.replace(/\n/g, ' ').replace(/\(/g, ',').replace(/X\)/g, ','))//取消cell中的換行符號、將(換成逗點、將X)換成逗點，切開槓桿倍數和方向
+					row.push(rows[j].children[k].innerText.replace(/\n/g, '').replace(/ /g, '').replace(/·/g, ',').replace(/X/g, ','))//取消cell中的換行符號，取消空白，將槓桿前面的點換成逗號，X換成逗號
+
 				}
 				else if(k===2){
 					//row.push(rows[j].children[k].innerText);
-					row.push(' ');//因為沒有開倉時間，所以改用空白補上
+					row.push('--');//因為沒有開倉時間，所以改用--補上
 				}
 				else if (k===5){
 					var principleData = rows[j].children[k].innerText
@@ -362,14 +373,14 @@ function outputBinance(){
 					row.push(rows[j].children[k].innerText.replace(/,/g, ''))//取代數字大於1000時逗點，因為會造成跳格；20220706 BingX網頁改版，跟隨者收益的值已經沒有單位，可直接使用，因此不用切
 					row.push('USDT');//20220706 BingX網頁改版，為了不調整EXCEL格式，手動補上訂單本金單位值為USDT
 
-					row.push('')//開倉日，用空白是因為幣安沒有開倉時間
+					row.push('--')//開倉日，用--是因為幣安沒有開倉時間
 					row.push(formatDate(rows[j].children[4].innerText))//收倉日
 					row.push(getLeverage(rows[j].children[0].innerText)*getPrinciple(rows[j].children[5].innerText)*0.00045);//手續費
 					var handlingFeePercent = getLeverage(rows[j].children[0].innerText)*getPrinciple(rows[j].children[5].innerText)*0.00045/getPrinciple(rows[j].children[5].innerText)//手續費佔本金比例
 					row.push(Math.round(handlingFeePercent*10000)/100+'%')//手續費佔本金比例換成百分比顯示
 					var rateOfRetun = parseFloat(rows[j].children[6].innerText);//parseFloat轉字串時，後面"%"會忽略，直接轉前面數字，所以下面使用時會先除100
 					row.push(Math.round((rateOfRetun/100 - handlingFeePercent)*10000)/100+'%');//扣除手續費收益率
-					row.push('')//持倉時間，因為沒開倉時間，所以直接給空白
+					row.push('--')//持倉時間，因為沒開倉時間，所以直接給--
 
 					
 				}
@@ -433,8 +444,8 @@ function getDateDiffByDays(date1,date2){
 
 
 function getLeverage(inputData) {
-	var a = inputData.split('(');
-	var b = a[1].split('X)');
+	var a = inputData.split('·');
+	var b = a[1].split('X');
 	var leverage = b[0].replace(/,/g, '');//避免1000以上會有千分位逗點問題
 	return leverage;
 }

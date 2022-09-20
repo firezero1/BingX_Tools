@@ -69,19 +69,20 @@ async function mainLoop() {
 
 	//console.log(data[0].children[0].innerText);
 	//確認跟單紀錄有幾頁
-	var getPages = document.querySelectorAll('div[data-v-29b986e6].el-pagination');
+	var getPages = document.querySelectorAll('div.el-pagination');
 	var pageMax=1;
 	
 	//抓標題資料
-	var tableHeader  = document.querySelectorAll('div[data-v-825276b0].header'); 
+	var tableHeader  = document.querySelectorAll('div.header'); 
 	finalData.push(tableHeader[0]);
 	
+
 	
 	if(getPages.length===0){
 		//只有一頁
 		await clickDropDownFunction(0);//展開明細
-		var data = document.querySelectorAll('div[data-v-57eb747a].line');
-		var dataDetail = document.querySelectorAll('div[data-v-3dae49ce].card');
+		var data = document.querySelectorAll('div.line');
+		var dataDetail = document.querySelectorAll('div.card:not(.box)');
 		
 		for(let i = 0; i < data.length; i++){
 			finalData.push(data[i]);
@@ -123,10 +124,12 @@ async function mainLoop() {
 			await clickFunction(1);//因為會等他做完，直接用1帶入即可
 			
 			
-			console.log('pushdata') 
-			var data = document.querySelectorAll('div[data-v-57eb747a].line');
-			var dataDetail = document.querySelectorAll('div[data-v-3dae49ce].card');
 			
+			console.log('pushdata') 
+			var data = document.querySelectorAll('div.line');
+			var dataDetail = document.querySelectorAll('div.card:not(.box)');//因為交易員今日收益和累積收益class是box card，抓card會抓到，因此須用not(.box)排除
+			
+		
 
 			for(let j = 0; j < data.length; j++){
 				finalData.push(data[j]);
@@ -222,7 +225,7 @@ function clickDropDownFunction(i){
 	return new Promise((resolve,reject)=>{//用promise才有辦法讓呼叫clickDropDownFunction的程式等他完成才進行下一步
 		setTimeout(() => {
 		console.log('into clickDropDownFunction') 
-		var btnDropDown = document.querySelectorAll('div[data-v-57eb747a].icon-fold');
+		var btnDropDown = document.querySelectorAll('div.icon-fold');
 		for(let j = 0; j < btnDropDown.length; j++){
 			btnDropDown[j].click();
 		}
@@ -262,6 +265,7 @@ function outputBingX(){
 				if(j===0){//處理標題
 					if(k===0){
 						row.push(finalData[j].children[k].innerText);
+						row.push('槓桿倍數');
 						row.push('方向');
 						row.push('倉別');
 					}else if (k===1){
@@ -273,14 +277,14 @@ function outputBingX(){
 					}else if (k===5){
 						row.push(finalData[j].children[k].innerText);
 						row.push('交易總額單位');	
-						row.push('槓桿倍數');
+						
 					}
 					else{
 						row.push(finalData[j].children[k].innerText);
 					}
 				}
 				else if(k===0){
-					row.push(finalData[j].children[k].innerText.replace(/空/g, '空,').replace(/多/g, '多,').replace(/\/USDT/g, '\/USDT,').replace(/\n/g, '').replace(/ /g, ''))//在多或空後面加上逗號切開方向，在/USDT後面加上逗號，取消cell中的換行符號，取消空白
+					row.push(finalData[j].children[k].innerText.replace(/空/g, '空,').replace(/多/g, '多,').replace(/\n/g, '').replace(/ /g, '').replace(/·/g, ',').replace(/X/g, ','))//在多或空後面加上逗號切開方向，取消cell中的換行符號，取消空白，將槓桿前面的點換成逗號，X換成逗號
 
 
 				}
@@ -296,8 +300,10 @@ function outputBingX(){
 				}
 				else if (k===6){
 					//下拉展開按鈕也包含在children內，因此在k===6時要避免放入，並改用槓桿取代
-					var leverage = getLeverage(finalData[j].children[4].innerText,finalData[j].children[5].innerText);
-					row.push(leverage);
+					//2022.09.20 BingX網頁改版，有提供槓桿資料，因此無須再計算
+					
+					// var leverage = getLeverage(finalData[j].children[4].innerText,finalData[j].children[5].innerText);
+					// row.push(leverage);
 				}
 				else{
 					row.push(finalData[j].children[k].innerText)
