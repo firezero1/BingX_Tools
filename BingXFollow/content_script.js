@@ -146,6 +146,7 @@ async function mainLoop() {
 		   if(i===pageMax-1){
 
 			 await outputExcel(1);//直接用1，因為上面會做完後再輸出
+			 //console.log(finalData[1].children);
 
 			 //console.log(finalDataDetail[1].children);
 		   }
@@ -247,13 +248,13 @@ function outputExcel(i){
 			// outputBingX();
 		// }
 		
-		outputBingX();
+		outputBingXFollow();
 		
 		
     }, timeoutBase*i);
 }
 
-function outputBingX(){
+function outputBingXFollow(){
 	
 		var csvAll=[];
 		for(var j=0; j<finalData.length; j++){ 
@@ -277,14 +278,13 @@ function outputBingX(){
 					}else if (k===5){
 						row.push(finalData[j].children[k].innerText);
 						row.push('交易總額單位');	
-						
-					}
-					else{
+
+					}else{
 						row.push(finalData[j].children[k].innerText);
 					}
 				}
 				else if(k===0){
-					row.push(finalData[j].children[k].innerText.replace(/空/g, '空,').replace(/多/g, '多,').replace(/\n/g, '').replace(/ /g, '').replace(/·/g, ',').replace(/X/g, ','))//在多或空後面加上逗號切開方向，取消cell中的換行符號，取消空白，將槓桿前面的點換成逗號，X換成逗號
+					row.push(finalData[j].children[k].innerText.replace(/空/g, '空,').replace(/多/g, '多,').replace(/ /g, '').replace(/X\n/g, ',').replace(/\n/g, '').replace(/·/g, ','))//在多或空後面加上逗號切開方向，X\n換成逗號(若只換X遇到像AVAX這種幣會跳行)，取消cell中的換行符號，取消空白，將槓桿前面的點換成逗號
 
 
 				}
@@ -302,8 +302,10 @@ function outputBingX(){
 					//下拉展開按鈕也包含在children內，因此在k===6時要避免放入，並改用槓桿取代
 					//2022.09.20 BingX網頁改版，有提供槓桿資料，因此無須再計算
 					
+					
 					// var leverage = getLeverage(finalData[j].children[4].innerText,finalData[j].children[5].innerText);
 					// row.push(leverage);
+
 				}
 				else{
 					row.push(finalData[j].children[k].innerText)
@@ -323,7 +325,14 @@ function outputBingX(){
 					}else if(k===1){
 						row.push('止盈百分比');
 						row.push(finalDataDetail[j].children[k].children[0].innerText)
-					}else{
+					}else if (k===7){
+						row.push(finalDataDetail[j].children[k].children[0].innerText)
+						
+						//2022.09.21 新增開倉日和收倉日標題
+						row.push('開倉日');	
+						row.push('收倉日');	
+					}
+					else{
 						row.push(finalDataDetail[j].children[k].children[0].innerText)
 					}
 					
@@ -335,13 +344,19 @@ function outputBingX(){
 						var originData = finalDataDetail[j-1].children[k].children[1].innerText;
 						if(originData === '--'){
 							row.push(originData);
-							row.push(originData);//push兩次是因為切成兩個欄位
+							row.push(originData);//push兩次是因為止損和止盈切成兩個欄位
 						}else{
 							originData=originData.replace(/ /g, '').replace(/\(/g, ',').replace(/\)/g, '');//將(換成逗點、將)拿掉，區分止損(盈)百分比和止損(盈)價，並將空白拿掉
 							row.push(originData);
 						}
 						
-					}else{
+					}else if (k===7){
+						//2022.09.21 新增開倉日和收倉日
+						row.push(finalDataDetail[j-1].children[k].children[1].innerText)
+						row.push(formatDate(finalDataDetail[j-1].children[2].children[1].innerText))//開倉日
+						row.push(formatDate(finalDataDetail[j-1].children[3].children[1].innerText))//收倉日
+					}
+					else{
 						row.push(finalDataDetail[j-1].children[k].children[1].innerText)
 					}
 

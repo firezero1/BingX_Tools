@@ -133,7 +133,7 @@ function outputBingX(){
 		//console.log(historyDataOrigin);
 		var rows =document.querySelectorAll('.history .row');
 		
-		
+	
 		
 		
 		//console.log(historyData);
@@ -208,7 +208,7 @@ function outputBingX(){
 				}
 				else if(k===0&& j>0){
 					//row.push(rows[j].children[k].innerText.replace(/\n/g, ' ').replace(/\(/g, ',').replace(/X\)/g, ','))//取消cell中的換行符號、將(換成逗點、將X)換成逗點，切開槓桿倍數和方向
-					row.push(rows[j].children[k].innerText.replace(/空/g, '空,').replace(/多/g, '多,').replace(/\n/g, '').replace(/ /g, '').replace(/·/g, ',').replace(/X/g, ','))//在多或空後面加上逗號切開方向，取消cell中的換行符號，取消空白，將槓桿前面的點換成逗號，X換成逗號
+					row.push(rows[j].children[k].innerText.replace(/空/g, '空,').replace(/多/g, '多,').replace(/ /g, '').replace(/X\n/g, ',').replace(/\n/g, '').replace(/·/g, ','))//在多或空後面加上逗號切開方向，X\n換成逗號(若只換X遇到像AVAX這種幣會跳行)，取消cell中的換行符號，取消空白，將槓桿前面的點換成逗號
 
 				}
 				else if (k===5){
