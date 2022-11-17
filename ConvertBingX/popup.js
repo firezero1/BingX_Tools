@@ -43,7 +43,7 @@ function injectTheScript() {
 	var clickCount = document.getElementById('clickCount').value 
 	var clickSpeed = document.getElementById('clickSpeed').value 
 	
-	//alert(isBinance);
+	
 	
 	
 	

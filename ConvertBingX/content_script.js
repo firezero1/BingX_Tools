@@ -15,6 +15,7 @@ var	isBinance;
 
     // Want to retrieve the parameter passed from eventpage.js here
 
+
     chrome.runtime.onMessage.addListener(function(message) {
         var receivedParameter = message.myVar;
 
@@ -23,6 +24,7 @@ var	isBinance;
 		count=message.myVar[2];
 		timeoutBase=message.myVar[3]*1000;//每次點擊耗費多少秒
 		//isBinance = message.myVar[4];
+
 
     });
 
@@ -56,10 +58,11 @@ async function mainLoop() {
 	//console.log(filterDate);
 	var getButtonResult = document.getElementsByClassName("more");
 	
-	//console.log(isBinance.toString())
+	
 	
 	//確認是否為幣安合約
-	var tabActivate =  document.getElementsByClassName("tab actived");
+	var tabActivate =  document.getElementsByClassName("tab active");
+	//console.log(tabActivate)
 	if(tabActivate[0].outerText==='Binance-1 合約' || tabActivate[0].outerText==='BingX 專業合約')
 	{
 		isBinance=true;
