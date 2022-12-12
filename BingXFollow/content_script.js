@@ -77,86 +77,95 @@ async function mainLoop() {
 	finalData.push(tableHeader[0]);
 	
 
-	
-	if(getPages.length===0){
-		//只有一頁
-		await clickDropDownFunction(0);//展開明細
-		var data = document.querySelectorAll('div.line');
-		var dataDetail = document.querySelectorAll('div.card:not(.box)');
-		
-		for(let i = 0; i < data.length; i++){
-			finalData.push(data[i]);
-		}
-		
-		for(let j = 0; j < dataDetail.length; j++){
-			finalDataDetail.push(dataDetail[j]);
-		}
-		
-		await outputExcel(0);
-
-	}else{
-		//有很多頁
-		var currentPageNumber = document.querySelectorAll('li.number.active');
-		if(currentPageNumber[0].innerText !== '1')
-		{
-			alert('請點擊第一頁再進行全部輸出');
-			return false;
-			
-		}
-
-		
-		var pageNumbers =  document.querySelectorAll('li.number');
-		// console.log(pageNumbers)
-		// console.log(pageNumbers[pageNumbers.length-1].innerText)
-		pageMax = pageNumbers[pageNumbers.length-1].innerText;
-		
-
-		for(let i = 0; i < pageMax; i++){
-			//console.log(i)	
-			
-
-			// if(i<2){
-				// await clickFunction(i+1);
-			// }else{
-				// await clickFunction(i);
-			// }
-			await clickDropDownFunction(1);
-			await clickFunction(1);//因為會等他做完，直接用1帶入即可
-			
-			
-			
-			console.log('pushdata') 
+	try {
+		if(getPages.length===0){
+			//只有一頁
+			await clickDropDownFunction(0);//展開明細
 			var data = document.querySelectorAll('div.line');
-			var dataDetail = document.querySelectorAll('div.card:not(.box)');//因為交易員今日收益和累積收益class是box card，抓card會抓到，因此須用not(.box)排除
+			var dataDetail = document.querySelectorAll('div.card:not(.box)');
 			
-		
-
-			for(let j = 0; j < data.length; j++){
-				finalData.push(data[j]);
+			for(let i = 0; i < data.length; i++){
+				finalData.push(data[i]);
 			}
 			
 			for(let j = 0; j < dataDetail.length; j++){
 				finalDataDetail.push(dataDetail[j]);
 			}
-
-
-			// console.log(finalData.length);
-			// console.log(finalData[0].children[1].innerText);
 			
-		   if(i===pageMax-1){
+			await outputExcel(0);
 
-			 await outputExcel(1);//直接用1，因為上面會做完後再輸出
-			 //console.log(finalData[1].children);
+		}else{
+			//有很多頁
+			var currentPageNumber = document.querySelectorAll('li.number.active');
+			if(currentPageNumber[0].innerText !== '1')
+			{
+				alert('請點擊第一頁再進行全部輸出');
+				return false;
+				
+			}
 
-			 //console.log(finalDataDetail[1].children);
-		   }
-		}
-    
+			
+			var pageNumbers =  document.querySelectorAll('li.number');
+			// console.log(pageNumbers)
+			// console.log(pageNumbers[pageNumbers.length-1].innerText)
+			pageMax = pageNumbers[pageNumbers.length-1].innerText;
+			
+
+			for(let i = 0; i < pageMax; i++){
+				//console.log(i)	
+				
+
+				// if(i<2){
+					// await clickFunction(i+1);
+				// }else{
+					// await clickFunction(i);
+				// }
+				await clickDropDownFunction(1);
+				await clickFunction(1);//因為會等他做完，直接用1帶入即可
+				
+				
+				
+				console.log('pushdata') 
+				var data = document.querySelectorAll('div.line');
+				var dataDetail = document.querySelectorAll('div.card:not(.box)');//因為交易員今日收益和累積收益class是box card，抓card會抓到，因此須用not(.box)排除
+				
+			
+
+				for(let j = 0; j < data.length; j++){
+					finalData.push(data[j]);
+				}
+				
+				for(let j = 0; j < dataDetail.length; j++){
+					finalDataDetail.push(dataDetail[j]);
+				}
+
+
+				console.log(finalData.length);
+				console.log(finalDataDetail.length);
+				
+				// console.log(finalData[0].children[1].innerText);
+				
+			   if(i===pageMax-1){
+
+				 await outputExcel(1);//直接用1，因為上面會做完後再輸出
+				 //console.log(finalData[1].children);
+
+				 //console.log(finalDataDetail[1].children);
+			   }
+			}
 		
-		// var btnNextDisable = document.querySelectorAll('button[disabled="disabled"].btn-next');//最後一頁時btn-next會disable
-		// var btnNext = document.querySelectorAll('.btn-next');
-		//btnNext[0].click()
+			
+			// var btnNextDisable = document.querySelectorAll('button[disabled="disabled"].btn-next');//最後一頁時btn-next會disable
+			// var btnNext = document.querySelectorAll('.btn-next');
+			//btnNext[0].click()
+		}	
+	}	
+	catch (e) {
+		console.log(e);
 	}
+	
+	
+	
 	
 
 	
