@@ -43,6 +43,9 @@ function injectTheScript() {
 	// var clickCount = document.getElementById('clickCount').value 
 	// var clickSpeed = document.getElementById('clickSpeed').value 
 	
+	var startPage = document.getElementById('startPage').value 
+	var endPage = document.getElementById('endPage').value 
+	
 	//alert(isBinance);
 	
 	
@@ -53,17 +56,38 @@ function injectTheScript() {
 	// parameterArray.push(filterDateEnd);
 	// parameterArray.push(clickCount);
 	// parameterArray.push(clickSpeed);
+	parameterArray.push(startPage);
+	parameterArray.push(endPage);
 
 	
 	
 	
 	myFunction();
     chrome.tabs.query({active: true, currentWindow: true}, tabs => {
-       chrome.scripting.executeScript({target: {tabId: tabs[0].id}, files: ['content_script.js']}, 
-	   function() {
-			chrome.tabs.sendMessage(tabs[0].id, {myVar: parameterArray});
+        chrome.scripting.executeScript({target: {tabId: tabs[0].id}, files: ['content_script.js']}, 
+	    function() {
+			 chrome.tabs.sendMessage(tabs[0].id, {myVar: parameterArray});
+			 console.log('call sendMessage finish');
+			 
 		});
     })
+	
+	// chrome.tabs.query({active: true, currentWindow: true}, tabs => {
+        // chrome.tabs.sendMessage(tabs[0].id, {myVar: parameterArray},function(response) {  
+                // console.log(response);  
+            // })
+		// console.log('call sendMessage finish');
+    // })
+	
+	
+	// chrome.tabs.query({active: true, currentWindow: true}, tabs => {
+        // chrome.scripting.executeScript({target: {tabId: tabs[0].id}, files: ['content_script.js']}, 
+	    // function() {
+			 // //chrome.tabs.sendMessage(tabs[0].id, {myVar: parameterArray});
+		// });
+    // })
+	
+
 }
 
 function myFunction() {
@@ -71,7 +95,7 @@ function myFunction() {
 	var btn = document.getElementById('clickactivity')
 	// var clickCount = document.getElementById('clickCount').value 
 	// var clickSpeed = document.getElementById('clickSpeed').value 
-
+	console.log('call myFunction');
 	btn.disabled = true;
 	//btn.style.background='#ff0033'
 	 setTimeout(()=>{

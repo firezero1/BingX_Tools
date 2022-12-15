@@ -11,26 +11,60 @@ var filterDate;
 var filterDateEnd;
 var count;
 var	isBinance;
+var startPage;
+var endPage;
 
 
 
 
-(function() {
+// (function() {
 
-    // Want to retrieve the parameter passed from eventpage.js here
+    // // Want to retrieve the parameter passed from eventpage.js here
 
-    chrome.runtime.onMessage.addListener(function(message) {
-        var receivedParameter = message.myVar;
+    // chrome.runtime.onMessage.addListener(function(message) {
+        // var receivedParameter = message.myVar;
 
-		// filterDate=message.myVar[0];
-        // filterDateEnd=message.myVar[1];
-		// count=message.myVar[2];
-		// timeoutBase=message.myVar[3]*1000;//每次點擊耗費多少秒
+		// // filterDate=message.myVar[0];
+        // // filterDateEnd=message.myVar[1];
+		// // count=message.myVar[2];
+		// // timeoutBase=message.myVar[3]*1000;//每次點擊耗費多少秒
+		
+		// startPage=message.myVar[0];
+		// endPage=message.myVar[1];
+		// console.log('myValue1 in addListener:'+startPage);
+		// console.log('myValue2 in addListener:'+endPage);
+		// mainLoop();
 
+    // });
 
-    });
+// })();
 
-})();
+chrome.runtime.onMessage.addListener(receiveMessage);
+
+function receiveMessage(message){
+	
+	try {
+		startPage=message.myVar[0];
+		endPage=message.myVar[1];
+		console.log('myValue1 in addListener:'+startPage);
+		console.log('myValue2 in addListener:'+endPage);
+		mainLoop();
+
+	}
+	catch(ex) {
+		console.log(ex);
+	
+	}
+	finally {
+		//不論有沒有做完都要移除收訊息事件，避免下次使用重複加上事件
+		removeReceiveMessageEvent();
+	}
+}
+
+function removeReceiveMessageEvent(){
+	chrome.runtime.onMessage.removeListener(receiveMessage);
+}
+
 
 
 /* while (isMoreData && i<20) {
@@ -57,6 +91,11 @@ var getButtonResult = document.getElementsByClassName("more")
 }  */
 
 async function mainLoop() {
+	
+	console.log('into mainloop')
+	console.log('myValue1 in mainLoop:'+startPage);
+	console.log('myValue2 in mainLoop:'+endPage);
+	
 
 	var tabFollowActivate =  document.getElementsByClassName("tab active");
 	//console.log(tabFollowActivate[0].outerText);
@@ -77,133 +116,131 @@ async function mainLoop() {
 	finalData.push(tableHeader[0]);
 	
 
-	try {
-		if(getPages.length===0){
-			//只有一頁
-			await clickDropDownFunction(0);//展開明細
-			var data = document.querySelectorAll('div.line');
-			var dataDetail = document.querySelectorAll('div.card:not(.box)');
+	if(getPages.length===0){
+		//只有一頁
+		await clickDropDownFunction(0);//展開明細
+		var data = document.querySelectorAll('div.line');
+		var dataDetail = document.querySelectorAll('div.card:not(.box)');
+		
+		for(let i = 0; i < data.length; i++){
+			finalData.push(data[i]);
+		}
+		
+		for(let j = 0; j < dataDetail.length; j++){
+			finalDataDetail.push(dataDetail[j]);
+		}
+		
+		await outputExcel(0);
+
+	}else{
+		//有很多頁
+		var currentPageNumber = document.querySelectorAll('li.number.active');
+		// if(currentPageNumber[0].innerText !== '1')
+		// {
+			// alert('請點擊第一頁再進行全部輸出');
+			// return false;
 			
-			for(let i = 0; i < data.length; i++){
-				finalData.push(data[i]);
+		// }
+		
+		var pageNumbers =  document.querySelectorAll('li.number');
+
+		pageMax = pageNumbers[pageNumbers.length-1].innerText;
+		
+		console.log(startPage);
+		console.log(pageMax);
+		
+		if(startPage===null||startPage===''||parseInt(startPage)<1)
+		{
+			startPage=1;
+		}
+		
+		console.log(startPage);
+	
+		if(endPage===null||endPage===''||parseInt(endPage)<1)
+		{
+			endPage=pageMax;
+		}
+		
+		if(parseInt(startPage)>parseInt(pageMax)){
+			alert('起始頁數超過最大頁數,請重新輸入');
+
+			return false;
+		}
+		
+		if(parseInt(endPage)>parseInt(pageMax)){
+			alert('結束頁數超過最大頁數,請重新輸入');
+			return false;
+		}
+		
+		
+		
+		var currentPage = currentPageNumber[0].innerText
+		
+		console.log('Change Page Start!');
+		while (parseInt(currentPage)!==parseInt(startPage)) {
+			await clickPageNumberFunction(1,startPage,currentPage);
+			currentPage=document.querySelectorAll('li.number.active')[0].innerText;
+			console.log('currentPage: '+currentPage +'startPage: '+startPage);
+		}
+		
+		console.log('Change Page End!');
+		
+		
+		
+		
+		
+
+		for(let i = startPage-1; i < endPage; i++){
+			//console.log(i)	
+			
+
+			// if(i<2){
+				// await clickFunction(i+1);
+			// }else{
+				// await clickFunction(i);
+			// }
+			await clickDropDownFunction(1);
+			await clickFunction(1);//因為會等他做完，直接用1帶入即可
+			
+			
+			
+			console.log('pushdata') 
+			var data = document.querySelectorAll('div.line');
+			var dataDetail = document.querySelectorAll('div.card:not(.box)');//因為交易員今日收益和累積收益class是box card，抓card會抓到，因此須用not(.box)排除
+			
+			console.log('第'+(i+1)+'頁data長度:'+data.length);
+			console.log('第'+(i+1)+'頁dataDetail長度:'+dataDetail.length);
+		
+
+			for(let j = 0; j < data.length; j++){
+				finalData.push(data[j]);
 			}
 			
 			for(let j = 0; j < dataDetail.length; j++){
 				finalDataDetail.push(dataDetail[j]);
 			}
+
+
+			console.log(finalData.length);
+			console.log(finalDataDetail.length);
 			
-			await outputExcel(0);
-
-		}else{
-			//有很多頁
-			var currentPageNumber = document.querySelectorAll('li.number.active');
-			if(currentPageNumber[0].innerText !== '1')
-			{
-				alert('請點擊第一頁再進行全部輸出');
-				return false;
-				
-			}
-
+			// console.log(finalData[0].children[1].innerText);
 			
-			var pageNumbers =  document.querySelectorAll('li.number');
-			// console.log(pageNumbers)
-			// console.log(pageNumbers[pageNumbers.length-1].innerText)
-			pageMax = pageNumbers[pageNumbers.length-1].innerText;
-			
+		   if(i===endPage-1){
 
-			for(let i = 0; i < pageMax; i++){
-				//console.log(i)	
-				
+			 await outputExcel(1);//直接用1，因為上面會做完後再輸出
+			 //console.log(finalData[1].children);
 
-				// if(i<2){
-					// await clickFunction(i+1);
-				// }else{
-					// await clickFunction(i);
-				// }
-				await clickDropDownFunction(1);
-				await clickFunction(1);//因為會等他做完，直接用1帶入即可
-				
-				
-				
-				console.log('pushdata') 
-				var data = document.querySelectorAll('div.line');
-				var dataDetail = document.querySelectorAll('div.card:not(.box)');//因為交易員今日收益和累積收益class是box card，抓card會抓到，因此須用not(.box)排除
-				
-			
-
-				for(let j = 0; j < data.length; j++){
-					finalData.push(data[j]);
-				}
-				
-				for(let j = 0; j < dataDetail.length; j++){
-					finalDataDetail.push(dataDetail[j]);
-				}
-
-
-				console.log(finalData.length);
-				console.log(finalDataDetail.length);
-				
-				// console.log(finalData[0].children[1].innerText);
-				
-			   if(i===pageMax-1){
-
-				 await outputExcel(1);//直接用1，因為上面會做完後再輸出
-				 //console.log(finalData[1].children);
-
-				 //console.log(finalDataDetail[1].children);
-			   }
-			}
+			 //console.log(finalDataDetail[1].children);
+		   }
+		}
+	
 		
-			
-			// var btnNextDisable = document.querySelectorAll('button[disabled="disabled"].btn-next');//最後一頁時btn-next會disable
-			// var btnNext = document.querySelectorAll('.btn-next');
-			//btnNext[0].click()
-		}	
-	}	
-	catch (e) {
-		console.log(e);
-	}
+		// var btnNextDisable = document.querySelectorAll('button[disabled="disabled"].btn-next');//最後一頁時btn-next會disable
+		// var btnNext = document.querySelectorAll('.btn-next');
+		//btnNext[0].click()
+	}		
 	
-	
-	
-	
-
-	
-	//var finalData=[];
-	// finalData.push(data[0]);
-	// var btnNext = document.querySelectorAll('.btn-next');
-	// btnNext[0].click()
-	// data = document.querySelectorAll('div[data-v-57eb747a].line');
-	// finalData.push(data[0]);
-	// console.log(finalData.length);
-	// console.log(finalData[0].children[1].innerText);
-	// console.log(finalData[1].children[1].innerText);
-
-	
-
-	
-	
-	//console.log(isBinance.toString())
-	
-	//確認是否為幣安合約
-	// var tabActivate =  document.getElementsByClassName("tab actived");
-	// if(tabActivate[0].outerText==='Binance-1 合約' || tabActivate[0].outerText==='BingX 專業合約')
-	// {
-		// isBinance=true;
-	// }else
-	// {
-		// isBinance=false;
-	// }
-
-	// var getButtonResult = document.getElementsByClassName("more");
-	
-	// if(getButtonResult.length===0){
-		// alert('請點選歷史交易');
-		// return false;
-	// }
-	
-
-	//alert('finish');
 }
 
 
@@ -229,6 +266,44 @@ function clickFunction(i){
 	});
     
 }
+
+function clickPageNumberFunction(i,pageNumber,currentPage){
+	return new Promise((resolve,reject)=>{//用promise才有辦法讓呼叫此Function的程式等他完成才進行下一步
+		setTimeout(() => {
+		console.log('into clickPageNumberFunction') 
+		
+		var pageToClick = contains('li.number',pageNumber);
+		console.log('pageNumber:'+pageNumber);
+		console.log('currentPage'+currentPage);
+		
+		if(pageToClick.length>0){
+			pageToClick[0].click();
+		}else if(currentPage<pageNumber){
+			var btnQuickNext = document.querySelectorAll('li.el-icon.more.btn-quicknext.el-icon-more');
+			btnQuickNext[0].click()
+		}else{
+			var btnQuickPrev = document.querySelectorAll('li.el-icon.more.btn-quickprev.el-icon-more');
+			btnQuickPrev[0].click()
+		}
+		
+		console.log('clickPageNumberFunction Finish') 
+		resolve();
+		
+
+		
+		}, timeoutBase*i );
+	});
+    
+}
+
+//尋找特定字串元素
+function contains(selector, text) {
+  var elements = document.querySelectorAll(selector);
+  return Array.prototype.filter.call(elements, function(element){
+    return RegExp(text).test(element.textContent);
+  });
+}
+
 
 //展開每一筆下拉選單
 function clickDropDownFunction(i){
@@ -447,4 +522,4 @@ function getPrinciple(inputData) {
 }
 
 
- mainLoop();
+
