@@ -11,24 +11,52 @@ var	isBinance;
 
 
 
-(function() {
+// (function() {
 
-    // Want to retrieve the parameter passed from eventpage.js here
+    // // Want to retrieve the parameter passed from eventpage.js here
 
 
-    chrome.runtime.onMessage.addListener(function(message) {
-        var receivedParameter = message.myVar;
+    // chrome.runtime.onMessage.addListener(function(message) {
+        // var receivedParameter = message.myVar;
 
+		// filterDate=message.myVar[0];
+        // filterDateEnd=message.myVar[1];
+		// count=message.myVar[2];
+		// timeoutBase=message.myVar[3]*1000;//每次點擊耗費多少秒
+		// //isBinance = message.myVar[4];
+
+
+    // });
+
+// })();
+
+
+chrome.runtime.onMessage.addListener(receiveMessage);
+
+function receiveMessage(message){
+	
+	try {
+		
 		filterDate=message.myVar[0];
         filterDateEnd=message.myVar[1];
 		count=message.myVar[2];
 		timeoutBase=message.myVar[3]*1000;//每次點擊耗費多少秒
-		//isBinance = message.myVar[4];
+		mainLoop();
 
+	}
+	catch(ex) {
+		console.log(ex);
+	
+	}
+	finally {
+		//不論有沒有做完都要移除收訊息事件，避免下次使用重複加上事件
+		removeReceiveMessageEvent();
+	}
+}
 
-    });
-
-})();
+function removeReceiveMessageEvent(){
+	chrome.runtime.onMessage.removeListener(receiveMessage);
+}
 
 
 /* while (isMoreData && i<20) {
@@ -465,4 +493,4 @@ function getPrinciple(inputData) {
 }
 
 
- mainLoop();
+
