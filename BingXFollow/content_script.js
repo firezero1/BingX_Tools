@@ -46,8 +46,8 @@ function receiveMessage(message){
 	try {
 		startPage=message.myVar[0];
 		endPage=message.myVar[1];
-		console.log('myValue1 in addListener:'+startPage);
-		console.log('myValue2 in addListener:'+endPage);
+		console.log('startPage in addListener:'+startPage);
+		console.log('endPage in addListener:'+endPage);
 		mainLoop();
 
 	}
@@ -370,15 +370,17 @@ function outputBingXFollow(){
 				else if(k===0){
 					row.push(finalData[j].children[k].innerText.replace(/空/g, '空,').replace(/多/g, '多,').replace(/ /g, '').replace(/X\n/g, ',').replace(/\n/g, '').replace(/·/g, ','))//在多或空後面加上逗號切開方向，X\n換成逗號(若只換X遇到像AVAX這種幣會跳行)，取消cell中的換行符號，取消空白，將槓桿前面的點換成逗號
 
-
 				}
 				else if (k===1){
 					row.push(finalData[j].children[k].innerText.replace(/\(/g, ',').replace(/\)/g, '').replace(/\n/g, ''))//將(換成逗點、將)拿掉，區分收益和收益百分比，並將前後換行符號拿掉
 					
 				}
+				else if (k===2 || k===3){
+					row.push(finalData[j].children[k].innerText.replace(/,/g, ''))//2023.03.27開倉價和平倉價多了千分位逗點，必須去掉
+				}
 				else if (k===4 || k===5){
-					
-					row.push(finalData[j].children[k].innerText.replace(/ /g, '').replace(/USDT/g, ',USDT').replace(/VST/g, ',VST').replace(/\n/g, ''))//將空白取消，將USDT(VST)換成USDT(VST)+逗點，將保證金和交易總額之數字與單位分開，並取消換行符號
+					//2023.03.27交易總額多了千分位逗點，必須先去掉，再將空白取消，將USDT(VST)換成USDT(VST)+逗點，將保證金和交易總額之數字與單位分開，並取消換行符號
+					row.push(finalData[j].children[k].innerText.replace(/,/g, '').replace(/ /g, '').replace(/USDT/g, ',USDT').replace(/VST/g, ',VST').replace(/\n/g, ''))
 					
 					
 				}
@@ -430,7 +432,8 @@ function outputBingXFollow(){
 							row.push(originData);
 							row.push(originData);//push兩次是因為止損和止盈切成兩個欄位
 						}else{
-							originData=originData.replace(/ /g, '').replace(/\(/g, ',').replace(/\)/g, '');//將(換成逗點、將)拿掉，區分止損(盈)百分比和止損(盈)價，並將空白拿掉
+							//2023.03.27觸發價多了千分位逗點，因此先拿掉，然後將(換成逗點、將)拿掉，區分止損(盈)百分比和止損(盈)價，並將空白拿掉
+							originData=originData.replace(/,/g, '').replace(/ /g, '').replace(/\(/g, ',').replace(/\)/g, '');
 							row.push(originData);
 						}
 						
