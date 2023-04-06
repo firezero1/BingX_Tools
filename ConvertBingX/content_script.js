@@ -220,17 +220,19 @@ function outputBingX(){
 						row.push('槓桿倍數');
 						row.push('方向');
 						row.push('倉別');
-					}else if (k===5){
-						row.push(rows[j].children[k].innerText);
-						row.push('訂單本金單位');	
-					}else if (k===8){
+					}
+					// else if (k===5){//20230406已經無訂單本金資料
+						// row.push(rows[j].children[k].innerText);
+						// row.push('訂單本金單位');	
+					// }
+					else if (k===7){
 						row.push(rows[j].children[k].innerText);
 						row.push('跟隨者收益單位');	
 						row.push('開倉日');	
 						row.push('收倉日');	
-						row.push('手續費');	
-						row.push('手續費佔本金比例');	
-						row.push('扣除手續費收益率');	
+						// row.push('手續費');	//20230406已經無訂單本金資料，也沒辦法算手續費
+						// row.push('手續費佔本金比例');	
+						// row.push('扣除手續費收益率');	
 						row.push('持倉時間(天)');	
 					}
 					else{
@@ -242,30 +244,35 @@ function outputBingX(){
 					row.push(rows[j].children[k].innerText.replace(/空/g, '空,').replace(/多/g, '多,').replace(/ /g, '').replace(/X\n/g, ',').replace(/\n/g, '').replace(/·/g, ','))//在多或空後面加上逗號切開方向，X\n換成逗號(若只換X遇到像AVAX這種幣會跳行)，取消cell中的換行符號，取消空白，將槓桿前面的點換成逗號
 
 				}
-				else if (k===5){
-					var principleData = rows[j].children[k].innerText
-					if (principleData.includes('*****')){
-						row.push('100');
-					}else{
-						//row.push(principleData.replace(/,/g, '').replace(/\n/g, ','))//取代數字大於1000時逗點，因為會造成跳格；cell中的換行符號換成逗號，把本金和跟隨者收益單位切開
-						row.push(principleData.replace(/,/g, ''))//取代數字大於1000時逗點，因為會造成跳格；20220706 BingX網頁改版，訂單本金的值已經沒有單位，可直接使用，因此不用切。
-						row.push('USDT');//20220706 BingX網頁改版，為了不調整EXCEL格式，手動補上訂單本金單位值為USDT
-					}
-					
-					
+				else if (k===1||k==3||k==6){
+					row.push(rows[j].children[k].innerText.replace(/,/g, ''))//2023.04.06開倉價、平倉價和跟隨人數多了千分位逗點，必須去掉
 				}
-				else if (k===8){
+				
+				// else if (k===5){
+					// var principleData = rows[j].children[k].innerText
+					// if (principleData.includes('*****')){
+						// row.push('100');
+					// }else{
+						// //row.push(principleData.replace(/,/g, '').replace(/\n/g, ','))//取代數字大於1000時逗點，因為會造成跳格；cell中的換行符號換成逗號，把本金和跟隨者收益單位切開
+						// row.push(principleData.replace(/,/g, ''))//取代數字大於1000時逗點，因為會造成跳格；20220706 BingX網頁改版，訂單本金的值已經沒有單位，可直接使用，因此不用切。
+						// row.push('USDT');//20220706 BingX網頁改版，為了不調整EXCEL格式，手動補上訂單本金單位值為USDT
+					// }
+					
+					
+				// }
+				else if (k===7){
+					//20230406已經無訂單本金資料，將手續費計算部分拿掉
 					//row.push(rows[j].children[k].innerText.replace(/,/g, '').replace(/\n/g, ','))//取代數字大於1000時逗點，因為會造成跳格；cell中的換行符號換成逗號，把跟隨者收益和跟隨者收益單位切開
 					row.push(rows[j].children[k].innerText.replace(/,/g, ''))//取代數字大於1000時逗點，因為會造成跳格；20220706 BingX網頁改版，跟隨者收益的值已經沒有單位，可直接使用，因此不用切
 					row.push('USDT');//20220706 BingX網頁改版，為了不調整EXCEL格式，手動補上訂單本金單位值為USDT
 
 					row.push(formatDate(rows[j].children[2].innerText))//開倉日
 					row.push(formatDate(rows[j].children[4].innerText))//收倉日
-					row.push(getLeverage(rows[j].children[0].innerText)*getPrinciple(rows[j].children[5].innerText)*0.00045);//手續費
-					var handlingFeePercent = getLeverage(rows[j].children[0].innerText)*getPrinciple(rows[j].children[5].innerText)*0.00045/getPrinciple(rows[j].children[5].innerText)//手續費佔本金比例
-					row.push(Math.round(handlingFeePercent*10000)/100+'%')//手續費佔本金比例換成百分比顯示
-					var rateOfRetun = parseFloat(rows[j].children[6].innerText);//parseFloat轉字串時，後面"%"會忽略，直接轉前面數字，所以下面使用時會先除100
-					row.push(Math.round((rateOfRetun/100 - handlingFeePercent)*10000)/100+'%');//扣除手續費收益率
+					//row.push(getLeverage(rows[j].children[0].innerText)*getPrinciple(rows[j].children[5].innerText)*0.00045);//手續費
+					//var handlingFeePercent = getLeverage(rows[j].children[0].innerText)*getPrinciple(rows[j].children[5].innerText)*0.00045/getPrinciple(rows[j].children[5].innerText)//手續費佔本金比例
+					//row.push(Math.round(handlingFeePercent*10000)/100+'%')//手續費佔本金比例換成百分比顯示
+					//var rateOfRetun = parseFloat(rows[j].children[6].innerText);//parseFloat轉字串時，後面"%"會忽略，直接轉前面數字，所以下面使用時會先除100
+					//row.push(Math.round((rateOfRetun/100 - handlingFeePercent)*10000)/100+'%');//扣除手續費收益率
 					var holdDays = getDateDiffByDays(rows[j].children[2].innerText,rows[j].children[4].innerText)
 					row.push(holdDays)//收倉時間-開倉時間=持倉時間
 					// console.log('handlingFeePercent:'+handlingFeePercent);
@@ -361,17 +368,19 @@ function outputBinance(){
 						row.push(rows[j].children[k].innerText);
 						row.push('槓桿倍數');
 						row.push('方向');
-					}else if (k===5){
-						row.push(rows[j].children[k].innerText);
-						row.push('訂單本金單位');	
-					}else if (k===8){
+					}
+					// else if (k===5){
+						// row.push(rows[j].children[k].innerText);
+						// row.push('訂單本金單位');	
+					// }
+					else if (k===7){
 						row.push(rows[j].children[k].innerText);
 						row.push('跟隨者收益單位');	
 						row.push('開倉日');	
 						row.push('收倉日');	
-						row.push('手續費');	
-						row.push('手續費佔本金比例');	
-						row.push('扣除手續費收益率');	
+						// row.push('手續費');	
+						// row.push('手續費佔本金比例');	
+						// row.push('扣除手續費收益率');	
 						row.push('持倉時間(天)');	
 					}
 					else{
@@ -383,34 +392,37 @@ function outputBinance(){
 					row.push(rows[j].children[k].innerText.replace(/\n/g, '').replace(/ /g, '').replace(/·/g, ',').replace(/X/g, ','))//取消cell中的換行符號，取消空白，將槓桿前面的點換成逗號，X換成逗號
 
 				}
+				else if (k===1||k==3||k==6){
+					row.push(rows[j].children[k].innerText.replace(/,/g, ''))//2023.04.06開倉價、平倉價和跟隨人數多了千分位逗點，必須去掉
+				}
 				else if(k===2){
 					//row.push(rows[j].children[k].innerText);
 					row.push('--');//因為沒有開倉時間，所以改用--補上
 				}
-				else if (k===5){
-					var principleData = rows[j].children[k].innerText
-					if (principleData.includes('*****')){
-						row.push('100');
-					}else{
-						//row.push(principleData.replace(/,/g, '').replace(/\n/g, ','))//取代數字大於1000時逗點，因為會造成跳格；cell中的換行符號換成逗號，把本金和跟隨者收益單位切開
-						row.push(principleData.replace(/,/g, ''))//取代數字大於1000時逗點，因為會造成跳格；20220706 BingX網頁改版，訂單本金的值已經沒有單位，可直接使用，因此不用切。
-						row.push('USDT');//20220706 BingX網頁改版，為了不調整EXCEL格式，手動補上訂單本金單位值為USDT
-					}
+				// else if (k===5){
+					// var principleData = rows[j].children[k].innerText
+					// if (principleData.includes('*****')){
+						// row.push('100');
+					// }else{
+						// //row.push(principleData.replace(/,/g, '').replace(/\n/g, ','))//取代數字大於1000時逗點，因為會造成跳格；cell中的換行符號換成逗號，把本金和跟隨者收益單位切開
+						// row.push(principleData.replace(/,/g, ''))//取代數字大於1000時逗點，因為會造成跳格；20220706 BingX網頁改版，訂單本金的值已經沒有單位，可直接使用，因此不用切。
+						// row.push('USDT');//20220706 BingX網頁改版，為了不調整EXCEL格式，手動補上訂單本金單位值為USDT
+					// }
 					
 					
-				}
-				else if (k===8){
+				// }
+				else if (k===7){
 					//row.push(rows[j].children[k].innerText.replace(/,/g, '').replace(/\n/g, ','))//取代數字大於1000時逗點，因為會造成跳格；cell中的換行符號換成逗號，把跟隨者收益和跟隨者收益單位切開
 					row.push(rows[j].children[k].innerText.replace(/,/g, ''))//取代數字大於1000時逗點，因為會造成跳格；20220706 BingX網頁改版，跟隨者收益的值已經沒有單位，可直接使用，因此不用切
 					row.push('USDT');//20220706 BingX網頁改版，為了不調整EXCEL格式，手動補上訂單本金單位值為USDT
 
 					row.push('--')//開倉日，用--是因為幣安沒有開倉時間
 					row.push(formatDate(rows[j].children[4].innerText))//收倉日
-					row.push(getLeverage(rows[j].children[0].innerText)*getPrinciple(rows[j].children[5].innerText)*0.00045);//手續費
-					var handlingFeePercent = getLeverage(rows[j].children[0].innerText)*getPrinciple(rows[j].children[5].innerText)*0.00045/getPrinciple(rows[j].children[5].innerText)//手續費佔本金比例
-					row.push(Math.round(handlingFeePercent*10000)/100+'%')//手續費佔本金比例換成百分比顯示
-					var rateOfRetun = parseFloat(rows[j].children[6].innerText);//parseFloat轉字串時，後面"%"會忽略，直接轉前面數字，所以下面使用時會先除100
-					row.push(Math.round((rateOfRetun/100 - handlingFeePercent)*10000)/100+'%');//扣除手續費收益率
+					// row.push(getLeverage(rows[j].children[0].innerText)*getPrinciple(rows[j].children[5].innerText)*0.00045);//手續費
+					// var handlingFeePercent = getLeverage(rows[j].children[0].innerText)*getPrinciple(rows[j].children[5].innerText)*0.00045/getPrinciple(rows[j].children[5].innerText)//手續費佔本金比例
+					// row.push(Math.round(handlingFeePercent*10000)/100+'%')//手續費佔本金比例換成百分比顯示
+					// var rateOfRetun = parseFloat(rows[j].children[6].innerText);//parseFloat轉字串時，後面"%"會忽略，直接轉前面數字，所以下面使用時會先除100
+					// row.push(Math.round((rateOfRetun/100 - handlingFeePercent)*10000)/100+'%');//扣除手續費收益率
 					row.push('--')//持倉時間，因為沒開倉時間，所以直接給--
 
 					
