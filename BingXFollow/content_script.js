@@ -97,8 +97,8 @@ async function mainLoop() {
 	console.log('myValue2 in mainLoop:'+endPage);
 	
 
-	var tabFollowActivate =  document.getElementsByClassName("tab active");
-	//console.log(tabFollowActivate[0].outerText);
+	var tabFollowActivate =  document.getElementsByClassName("mtb-item-active");
+	//console.log(tabFollowActivate[0]);
 	if(tabFollowActivate[0].outerText !== '歷史交易')
 	{
 		alert('請點選歷史交易');
@@ -113,8 +113,8 @@ async function mainLoop() {
 	
 	//抓標題資料
 	var tableHeader  = document.querySelectorAll('div.header'); 
-	finalData.push(tableHeader[0]);
-	
+	finalData.push(tableHeader[1]);//20230417 BingX網頁改版，跟單設定的class也是Header，導致tableHeader有兩個元素，必須改取第二個才是我要的標題
+
 
 	if(getPages.length===0){
 		//只有一頁
@@ -219,10 +219,12 @@ async function mainLoop() {
 			for(let j = 0; j < dataDetail.length; j++){
 				finalDataDetail.push(dataDetail[j]);
 			}
+			
 
 
-			console.log(finalData.length);
-			console.log(finalDataDetail.length);
+
+			//console.log(finalData);
+			//console.log(finalDataDetail);
 			
 			// console.log(finalData[0].children[1].innerText);
 			
@@ -231,7 +233,7 @@ async function mainLoop() {
 			 await outputExcel(1);//直接用1，因為上面會做完後再輸出
 			 //console.log(finalData[1].children);
 
-			 //console.log(finalDataDetail[1].children);
+			 // console.log(finalDataDetail[1].children);
 		   }
 		}
 	
@@ -310,7 +312,7 @@ function clickDropDownFunction(i){
 	return new Promise((resolve,reject)=>{//用promise才有辦法讓呼叫clickDropDownFunction的程式等他完成才進行下一步
 		setTimeout(() => {
 		console.log('into clickDropDownFunction') 
-		var btnDropDown = document.querySelectorAll('div.icon-fold');
+		var btnDropDown = document.querySelectorAll('div.line.fold');
 		for(let j = 0; j < btnDropDown.length; j++){
 			btnDropDown[j].click();
 		}
@@ -350,25 +352,35 @@ function outputBingXFollow(){
 				if(j===0){//處理標題
 					if(k===0){
 						row.push(finalData[j].children[k].innerText);
-						row.push('槓桿倍數');
+						
 						row.push('方向');
 						row.push('倉別');
+						row.push('槓桿倍數');
 					}else if (k===1){
 						row.push(finalData[j].children[k].innerText);
 						row.push('收益百分比');	
 					}else if (k===4){
 						row.push(finalData[j].children[k].innerText);
-						row.push('保證金單位');	
+						//row.push('保證金單位');	
 					}else if (k===5){
 						row.push(finalData[j].children[k].innerText);
-						row.push('交易總額單位');	
+						//row.push('交易總額單位');	
 
 					}else{
 						row.push(finalData[j].children[k].innerText);
 					}
 				}
 				else if(k===0){
-					row.push(finalData[j].children[k].innerText.replace(/空/g, '空,').replace(/多/g, '多,').replace(/ /g, '').replace(/X\n/g, ',').replace(/\n/g, '').replace(/·/g, ','))//在多或空後面加上逗號切開方向，X\n換成逗號(若只換X遇到像AVAX這種幣會跳行)，取消cell中的換行符號，取消空白，將槓桿前面的點換成逗號
+					//20230410 BingX又改版，將槓桿倍數改用正規表示式來尋找並取代，另外先去空白後，有一個地方會有連續兩個換行符號，因此先將他們換成逗號，再將一個換行符號的換成逗號
+					var textData = finalData[j].children[k].innerText
+					var leverageStartIndex = textData.search(/\d+X/g)
+					var leverageEndIndex = textData.indexOf("X",leverageStartIndex)
+					var leverageNumber=textData.slice(leverageStartIndex,leverageEndIndex)
+
+					//var leverageNumber = leverage.replace(/X/g, '')
+
+					//console.log(finalData[j].children[k].innerText.replace(/ /g, '').replace(/\d+X/g, leverageNumber).replace(/\n\n/g, ',').replace(/\n/g, ','))
+					row.push(finalData[j].children[k].innerText.replace(/ /g, '').replace(/\d+X/g, leverageNumber).replace(/\n\n/g, ',').replace(/\n/g, ','))
 
 				}
 				else if (k===1){
@@ -380,7 +392,8 @@ function outputBingXFollow(){
 				}
 				else if (k===4 || k===5){
 					//2023.03.27交易總額多了千分位逗點，必須先去掉，再將空白取消，將USDT(VST)換成USDT(VST)+逗點，將保證金和交易總額之數字與單位分開，並取消換行符號
-					row.push(finalData[j].children[k].innerText.replace(/,/g, '').replace(/ /g, '').replace(/USDT/g, ',USDT').replace(/VST/g, ',VST').replace(/\n/g, ''))
+					//2023.04.17保證金和交易總額沒有單位了，取消
+					row.push(finalData[j].children[k].innerText.replace(/,/g, '').replace(/ /g, '').replace(/\n/g, ''))
 					
 					
 				}
@@ -442,6 +455,9 @@ function outputBingXFollow(){
 						row.push(finalDataDetail[j-1].children[k].children[1].innerText)
 						row.push(formatDate(finalDataDetail[j-1].children[2].children[1].innerText))//開倉日
 						row.push(formatDate(finalDataDetail[j-1].children[3].children[1].innerText))//收倉日
+					}
+					else if (k===8){
+						row.push(finalDataDetail[j-1].children[k].children[1].innerText.replace(/\n/g, ''))
 					}
 					else{
 						row.push(finalDataDetail[j-1].children[k].children[1].innerText)
