@@ -108,39 +108,44 @@ async function mainLoop() {
 
 	//console.log(data[0].children[0].innerText);
 	//確認跟單紀錄有幾頁
-	var getPages = document.querySelectorAll('div.el-pagination');
+	var getPages = document.querySelectorAll('div.page-cell');
 	var pageMax=1;
 	
+
+	
 	//抓標題資料
-	var tableHeader  = document.querySelectorAll('div.header'); 
-	finalData.push(tableHeader[1]);//20230417 BingX網頁改版，跟單設定的class也是Header，導致tableHeader有兩個元素，必須改取第二個才是我要的標題
-
-
+	var tableHeader  = document.querySelectorAll('thead'); 
+	finalData.push(tableHeader[0]);//20230417 BingX網頁改版，跟單設定的class也是Header，導致tableHeader有兩個元素，必須改取第二個才是我要的標題
+	
 	if(getPages.length===0){
 		//只有一頁
-		await clickDropDownFunction(0);//展開明細
-		var data = document.querySelectorAll('div.line');
-		var dataDetail = document.querySelectorAll('div.card:not(.box)');
+		//await clickDropDownFunction(0);//展開明細
+		var data = document.querySelectorAll('tr');
+		//var dataDetail = document.querySelectorAll('div.card:not(.box)');
 		
 		for(let i = 0; i < data.length; i++){
 			finalData.push(data[i]);
 		}
 		
-		for(let j = 0; j < dataDetail.length; j++){
-			finalDataDetail.push(dataDetail[j]);
-		}
+		// for(let j = 0; j < dataDetail.length; j++){
+			// finalDataDetail.push(dataDetail[j]);
+		// }
 		
 		await outputExcel(0);
 
 	}else{
 		//有很多頁
-		var currentPageNumber = document.querySelectorAll('li.number.active');
+		var currentPageNumber = document.querySelectorAll('div.page-cell.active');
 		// if(currentPageNumber[0].innerText !== '1')
 		// {
 			// alert('請點擊第一頁再進行全部輸出');
 			// return false;
 			
 		// }
+		
+		console.log(currentPageNumber);
+		console.log(currentPageNumber[0].innerText);
+		return false;
 		
 		var pageNumbers =  document.querySelectorAll('li.number');
 
@@ -334,10 +339,67 @@ function outputExcel(i){
 			// outputBingX();
 		// }
 		
-		outputBingXFollow();
-		
+		//outputBingXFollow();
+		outputBingXFollowNew();
 		
     }, timeoutBase*i);
+}
+
+function outputBingXFollowNew(){
+	var csvAll=[];
+	for(var j=0; j<finalData.length; j++){ 
+		var row = [];
+		for(var k=0; k<finalData[j].children.length; k++){
+			if(j===0){//處理標題
+				if(k===0){
+					row.push(finalData[j].children[k].innerText);
+					
+					row.push('方向');
+					row.push('倉別');
+					row.push('槓桿倍數');
+				}else if (k===1){
+					row.push(finalData[j].children[k].innerText);
+					row.push('收益百分比');	
+				}else if (k===4){
+					row.push(finalData[j].children[k].innerText);
+					//row.push('保證金單位');	
+				}else if (k===5){
+					row.push(finalData[j].children[k].innerText);
+					//row.push('交易總額單位');	
+
+				}else{
+					row.push(finalData[j].children[k].innerText);
+				}
+			}
+			else if(k===0){
+				//20230410 BingX又改版，將槓桿倍數改用正規表示式來尋找並取代，另外先去空白後，有一個地方會有連續兩個換行符號，因此先將他們換成逗號，再將一個換行符號的換成逗號
+				var textData = finalData[j].children[k].innerText
+				var leverageStartIndex = textData.search(/\d+X/g)
+				var leverageEndIndex = textData.indexOf("X",leverageStartIndex)
+				var leverageNumber=textData.slice(leverageStartIndex,leverageEndIndex)
+
+				//var leverageNumber = leverage.replace(/X/g, '')
+
+				//console.log(finalData[j].children[k].innerText.replace(/ /g, '').replace(/\d+X/g, leverageNumber).replace(/\n\n/g, ',').replace(/\n/g, ','))
+				row.push(finalData[j].children[k].innerText.replace(/ /g, '').replace(/\d+X/g, leverageNumber).replace(/\n\n/g, ',').replace(/\n/g, ','))
+
+			}else{
+				row.push(finalData[j].children[k].innerText);				
+			}
+			
+		}
+		csvAll.push(row.join(','))
+	}
+	
+	var csvString = csvAll.join("\n");
+	var a = document.createElement('a');
+	a.href = "data:text/csv;charset=utf-8,\uFEFF" + encodeURI(csvString);
+	a.target      = '_blank';
+	a.download    = 'FollowOutput.csv';
+
+	document.body.appendChild(a);
+	a.click();
+	
 }
 
 function outputBingXFollow(){
