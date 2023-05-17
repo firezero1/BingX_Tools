@@ -143,11 +143,9 @@ async function mainLoop() {
 			
 		// }
 		
-		console.log(currentPageNumber);
-		console.log(currentPageNumber[0].innerText);
-		return false;
 		
-		var pageNumbers =  document.querySelectorAll('li.number');
+		var pageNumbers =  document.querySelectorAll('div.page-cell');
+
 
 		pageMax = pageNumbers[pageNumbers.length-1].innerText;
 		
@@ -184,16 +182,13 @@ async function mainLoop() {
 		console.log('Change Page Start!');
 		while (parseInt(currentPage)!==parseInt(startPage)) {
 			await clickPageNumberFunction(1,startPage,currentPage);
-			currentPage=document.querySelectorAll('li.number.active')[0].innerText;
+			currentPage=document.querySelectorAll('div.page-cell.active')[0].innerText;
 			console.log('currentPage: '+currentPage +'startPage: '+startPage);
 		}
 		
 		console.log('Change Page End!');
 		
-		
-		
-		
-		
+				
 
 		for(let i = startPage-1; i < endPage; i++){
 			//console.log(i)	
@@ -204,28 +199,28 @@ async function mainLoop() {
 			// }else{
 				// await clickFunction(i);
 			// }
-			await clickDropDownFunction(1);
-			await clickFunction(1);//因為會等他做完，直接用1帶入即可
+			//await clickDropDownFunction(1);
 			
 			
+
 			
 			console.log('pushdata') 
-			var data = document.querySelectorAll('div.line');
-			var dataDetail = document.querySelectorAll('div.card:not(.box)');//因為交易員今日收益和累積收益class是box card，抓card會抓到，因此須用not(.box)排除
+			var data = document.querySelectorAll('tr');
+			//var dataDetail = document.querySelectorAll('div.card:not(.box)');//因為交易員今日收益和累積收益class是box card，抓card會抓到，因此須用not(.box)排除
 			
 			console.log('第'+(i+1)+'頁data長度:'+data.length);
-			console.log('第'+(i+1)+'頁dataDetail長度:'+dataDetail.length);
+			//console.log('第'+(i+1)+'頁dataDetail長度:'+dataDetail.length);
 		
 
 			for(let j = 0; j < data.length; j++){
 				finalData.push(data[j]);
 			}
 			
-			for(let j = 0; j < dataDetail.length; j++){
-				finalDataDetail.push(dataDetail[j]);
-			}
+			// for(let j = 0; j < dataDetail.length; j++){
+				// finalDataDetail.push(dataDetail[j]);
+			// }
 			
-
+			await clickFunction(1);//因為會等他做完，直接用1帶入即可
 
 
 			//console.log(finalData);
@@ -256,11 +251,11 @@ function clickFunction(i){
 	return new Promise((resolve,reject)=>{//用promise才有辦法讓呼叫clickFunction的程式等他完成才進行下一步
 		setTimeout(() => {
 		console.log('into clickFunction') 
-		var btnNextDisable = document.querySelectorAll('button[disabled="disabled"].btn-next');//最後一頁時btn-next會disable
+		var btnNextDisable = document.querySelectorAll('div.jump-cell.jump-cell_next.rtl-element-reverse.disabled');//最後一頁時btn-next會disable
 		if(btnNextDisable.length>0){
 			
 		}else{
-			var btnNext = document.querySelectorAll('.btn-next');
+			var btnNext = document.querySelectorAll('div.jump-cell.jump-cell_next.rtl-element-reverse');
 			btnNext[0].click()
 			console.log('clickFinish') 
 		}
@@ -279,20 +274,25 @@ function clickPageNumberFunction(i,pageNumber,currentPage){
 		setTimeout(() => {
 		console.log('into clickPageNumberFunction') 
 		
-		var pageToClick = contains('li.number',pageNumber);
+		var pageToClick = contains('div.page-cell',pageNumber);
 		console.log('pageNumber:'+pageNumber);
 		console.log('currentPage'+currentPage);
-		
-		if(pageToClick.length>0){
+		var pageNumberInt =parseInt(pageNumber);
+		var currentPageInt = parseInt(currentPage);
+	
+		if(pageToClick.length>0 && pageToClick[0].innerText===pageNumber){
 			pageToClick[0].click();
-		}else if(currentPage<pageNumber){
-			var btnQuickNext = document.querySelectorAll('li.el-icon.more.btn-quicknext.el-icon-more');
+			console.log('pageToClick Click') 
+		}else if(currentPageInt<pageNumberInt){
+			var btnQuickNext = document.querySelectorAll('div.expand-cell.expand-cell_next.rtl-element-reverse');
 			btnQuickNext[0].click()
+			console.log('btnQuickNext Click') 
 		}else{
-			var btnQuickPrev = document.querySelectorAll('li.el-icon.more.btn-quickprev.el-icon-more');
+			var btnQuickPrev = document.querySelectorAll('.expand-cell.expand-cell_prev.rtl-element-reverse');
 			btnQuickPrev[0].click()
+			console.log('btnQuickPrev Click') 
 		}
-		
+
 		console.log('clickPageNumberFunction Finish') 
 		resolve();
 		
